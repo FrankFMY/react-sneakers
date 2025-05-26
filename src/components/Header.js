@@ -1,28 +1,45 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 import { useCart } from '../hooks/useCart';
+import ThemeSwitch from './ThemeSwitch';
 
 function Header(props) {
     const { totalPrice } = useCart();
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     return (
-        <header className='d-flex justify-between align-center p-40'>
-            <Link to='/'>
-                <div className='d-flex align-center'>
-                    <img
-                        width={40}
-                        height={40}
-                        src='img/logo.png'
-                        alt='Logotype'
-                    />
-                    <div>
-                        <h3 className='text-uppercase'>React Sneakers</h3>
-                        <p className='opacity-5'>Магазин лучших кроссовок</p>
+        <header className='d-flex justify-between align-center'>
+            <div className="headerLeft">
+                <Link to='/'>
+                    <div className='d-flex align-center'>
+                        <img
+                            width={isMobile ? 30 : 40}
+                            height={isMobile ? 30 : 40}
+                            src='img/logo.png'
+                            alt='Logotype'
+                        />
+                        <div>
+                            <h3 className='text-uppercase'>{isMobile ? 'RS' : 'React Sneakers'}</h3>
+                            {!isMobile && <p className='opacity-5'>Магазин лучших кроссовок</p>}
+                        </div>
                     </div>
-                </div>
-            </Link>
-            <ul className='d-flex'>
+                </Link>
+            </div>
+            <ul className='d-flex align-center headerRight'>
+                <li className='mr-30 cu-p'>
+                    <ThemeSwitch />
+                </li>
                 <li
                     onClick={props.onClickCart}
                     className='mr-30 cu-p'

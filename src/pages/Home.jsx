@@ -1,5 +1,4 @@
 import React from 'react';
-
 import Card from '../components/Card';
 
 function Home({
@@ -53,8 +52,8 @@ function Home({
     };
 
     return (
-        <div className='content p-40'>
-            <div className='d-flex align-center justify-between mb-40'>
+        <div className='content'>
+            <div className='search-content-wrapper'>
                 <h1>
                     {searchValue
                         ? `Поиск по запросу: "${searchValue}"`
@@ -80,7 +79,7 @@ function Home({
                     />
                 </div>
             </div>
-            <div className='d-flex flex-wrap'>{renderItems()}</div>
+            <div className='sneakers-grid'>{renderItems()}</div>
         </div>
     );
 }

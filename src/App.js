@@ -15,6 +15,7 @@ function App() {
     const [searchValue, setSearchValue] = React.useState('');
     const [cartOpened, setCartOpened] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(true);
+    const [darkTheme, setDarkTheme] = React.useState(false);
 
     React.useEffect(() => {
         // Using mock data since the API is no longer available
@@ -252,6 +253,32 @@ function App() {
         return item ? item.quantity || 1 : 0;
     };
 
+    // Toggle dark theme
+    const toggleTheme = () => {
+        const newTheme = !darkTheme;
+        setDarkTheme(newTheme);
+        localStorage.setItem('darkTheme', JSON.stringify(newTheme));
+        
+        // Apply theme to body
+        if (newTheme) {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+    };
+    
+    // Load theme from localStorage on initial render
+    React.useEffect(() => {
+        const savedTheme = localStorage.getItem('darkTheme');
+        if (savedTheme) {
+            const isDark = JSON.parse(savedTheme);
+            setDarkTheme(isDark);
+            if (isDark) {
+                document.body.classList.add('dark-theme');
+            }
+        }
+    }, []);
+
     return (
         <AppContext.Provider
             value={{
@@ -265,6 +292,8 @@ function App() {
                 updateCartItemQuantity,
                 setCartOpened,
                 setCartItems,
+                darkTheme,
+                toggleTheme,
             }}
         >
             <div className='wrapper clear'>
