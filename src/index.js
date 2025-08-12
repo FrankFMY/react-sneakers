@@ -1,17 +1,20 @@
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import ReactDOM from 'react-dom';
+import { HashRouter } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
 
 import './index.scss';
 import 'macro-css';
 
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 
-ReactDOM.render(
-    <React.StrictMode>
-        <Router>
-            <App />
-        </Router>
-    </React.StrictMode>,
-    document.getElementById('root')
+const root = createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </ErrorBoundary>
+  </React.StrictMode>
 );

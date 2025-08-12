@@ -15,6 +15,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <title>React Sneakers</title>
+    <script>
+      (function applyInitialTheme() {
+        try {
+          var saved = localStorage.getItem('darkTheme');
+          if (saved && JSON.parse(saved)) {
+            document.documentElement.classList.add('dark-theme');
+            if (document.body && document.body.classList) {
+              document.body.classList.add('dark-theme');
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

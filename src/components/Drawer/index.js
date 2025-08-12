@@ -4,6 +4,8 @@ import { useCart } from '../../hooks/useCart';
 import AppContext from '../../context';
 import styles from './Drawer.module.scss';
 
+import { formatCurrency } from '../../utils/formatCurrency';
+
 function Drawer({ onClose, onRemove, items = [], opened }) {
     const { cartItems, setCartItems, totalPrice } = useCart();
     const { updateCartItemQuantity } = React.useContext(AppContext);
@@ -34,6 +36,7 @@ function Drawer({ onClose, onRemove, items = [], opened }) {
             setOrderId(orderId);
             setIsOrderComplete(true);
             setCartItems([]);
+            localStorage.setItem('cart', JSON.stringify([]));
             setIsLoading(false);
         }, 1000);
     };
@@ -43,6 +46,16 @@ function Drawer({ onClose, onRemove, items = [], opened }) {
             onClose();
         }
     };
+
+    React.useEffect(() => {
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape' && opened) {
+                onClose();
+            }
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [opened, onClose]);
 
     return (
         <div
@@ -80,7 +93,7 @@ function Drawer({ onClose, onRemove, items = [], opened }) {
                                     <div className='mr-20 flex'>
                                         <p className='mb-5'>{obj.title}</p>
                                         <div className='d-flex align-center'>
-                                            <b>{obj.price} руб.</b>
+                                            <b>{formatCurrency(obj.price)}</b>
                                             <span className='ml-5'>
                                                 × {obj.quantity || 1}
                                             </span>
@@ -140,12 +153,12 @@ function Drawer({ onClose, onRemove, items = [], opened }) {
                                 <li>
                                     <span>Итого:</span>
                                     <div></div>
-                                    <b>{totalPrice} руб. </b>
+                                    <b>{formatCurrency(totalPrice)} </b>
                                 </li>
                                 <li>
                                     <span>Налог 5%:</span>
                                     <div></div>
-                                    <b>{((totalPrice / 100) * 5).toFixed(2)} руб. </b>
+                                    <b>{formatCurrency((totalPrice / 100) * 5)} </b>
                                 </li>
                             </ul>
                             <button

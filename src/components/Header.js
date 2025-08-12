@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import ThemeSwitch from './ThemeSwitch';
 
+import { formatCurrency } from '../utils/formatCurrency';
+
 function Header(props) {
     const { totalPrice } = useCart();
-    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+    const [isMobile, setIsMobile] = React.useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
 
     React.useEffect(() => {
         const handleResize = () => {
@@ -50,7 +52,7 @@ function Header(props) {
                         src='img/cart.svg'
                         alt='Корзина'
                     />
-                    <span>{totalPrice} руб.</span>
+                    <span>{formatCurrency(totalPrice)}</span>
                 </li>
                 <li className='mr-20 cu-p'>
                     <Link to='/favorites'>
