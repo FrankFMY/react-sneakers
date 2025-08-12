@@ -3,33 +3,32 @@ import Card from '../components/Card';
 import AppContext from '../context';
 
 function Orders() {
-    const { } = React.useContext(AppContext); // We don't need any context values here
+    // We don't need any values from context here
+    React.useContext(AppContext);
     const [orders, setOrders] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
 
-    // Mock orders data
-    const mockOrders = [
-        {
-            id: '1',
-            items: [
-                {
-                    id: '1',
-                    title: 'Мужские Кроссовки Nike Blazer Mid Suede',
-                    price: 12999,
-                    imageUrl: '/img/sneakers/1.jpg',
-                },
-                {
-                    id: '2',
-                    title: 'Мужские Кроссовки Nike Air Max 270',
-                    price: 15600,
-                    imageUrl: '/img/sneakers/2.jpg',
-                },
-            ],
-        },
-    ];
-
     // Helper function to load mock orders data
     const loadMockOrders = React.useCallback(() => {
+        const mockOrders = [
+            {
+                id: '1',
+                items: [
+                    {
+                        id: '1',
+                        title: 'Мужские Кроссовки Nike Blazer Mid Suede',
+                        price: 12999,
+                        imageUrl: '/img/sneakers/1.jpg',
+                    },
+                    {
+                        id: '2',
+                        title: 'Мужские Кроссовки Nike Air Max 270',
+                        price: 15600,
+                        imageUrl: '/img/sneakers/2.jpg',
+                    },
+                ],
+            },
+        ];
         setOrders(
             mockOrders.reduce((prev, obj) => [...prev, ...obj.items], [])
         );
@@ -67,9 +66,9 @@ function Orders() {
             </div>
 
             <div className='d-flex flex-wrap'>
-                {(isLoading ? [...Array(8)] : orders).map((item, index) => (
+                {(isLoading ? [...Array(8)] : orders).map((item) => (
                     <Card
-                        key={index}
+                        key={item?.id || Math.random()}
                         loading={isLoading}
                         {...item}
                     />

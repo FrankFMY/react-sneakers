@@ -4,9 +4,9 @@ import Header from './components/Header';
 import Drawer from './components/Drawer';
 import AppContext from './context';
 
-import Home from './pages/Home';
-import Favorites from './pages/Favorites';
-import Orders from './pages/Orders';
+const Home = React.lazy(() => import('./pages/Home'));
+const Favorites = React.lazy(() => import('./pages/Favorites'));
+const Orders = React.lazy(() => import('./pages/Orders'));
 
 function App() {
     const [items, setItems] = React.useState([]);
@@ -110,13 +110,43 @@ function App() {
             }
         }
 
+        // Parse favorites safely
+        let parsedFavorites = [];
+        if (savedFavorites) {
+            try {
+                const tempFavorites = JSON.parse(savedFavorites);
+                parsedFavorites = Array.isArray(tempFavorites)
+                    ? tempFavorites.filter((item) => item && item.id)
+                    : [];
+                if (parsedFavorites.length !== (Array.isArray(tempFavorites) ? tempFavorites.length : 0)) {
+                    localStorage.setItem('favorites', JSON.stringify(parsedFavorites));
+                }
+            } catch (e) {
+                console.error('Error parsing favorites data:', e);
+                localStorage.removeItem('favorites');
+            }
+        }
+
         setItems(mockItems);
         setCartItems(parsedCart);
-        setFavorites(savedFavorites ? JSON.parse(savedFavorites) : []);
+        setFavorites(parsedFavorites);
         setIsLoading(false);
     }, []);
 
-    const onAddToCart = (obj, quantity = 1) => {
+    // Handlers
+    const onRemoveItem = React.useCallback((id) => {
+        try {
+            const newCartItems = cartItems.filter(
+                (item) => Number(item.id) !== Number(id)
+            );
+            setCartItems(newCartItems);
+            localStorage.setItem('cart', JSON.stringify(newCartItems));
+        } catch (error) {
+            console.error(error);
+        }
+    }, [cartItems]);
+
+    const onAddToCart = React.useCallback((obj, quantity = 1) => {
         try {
             let newCartItems;
 
@@ -167,21 +197,9 @@ function App() {
         } catch (error) {
             console.error(error);
         }
-    };
+    }, [cartItems]);
 
-    const onRemoveItem = (id) => {
-        try {
-            const newCartItems = cartItems.filter(
-                (item) => Number(item.id) !== Number(id)
-            );
-            setCartItems(newCartItems);
-            localStorage.setItem('cart', JSON.stringify(newCartItems));
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const updateCartItemQuantity = (id, change) => {
+    const updateCartItemQuantity = React.useCallback((id, change) => {
         try {
             const item = cartItems.find(
                 (item) => Number(item.id) === Number(id)
@@ -213,9 +231,9 @@ function App() {
         } catch (error) {
             console.error(error);
         }
-    };
+    }, [cartItems, onRemoveItem]);
 
-    const onAddToFavorite = (obj) => {
+    const onAddToFavorite = React.useCallback((obj) => {
         try {
             let newFavorites;
 
@@ -234,27 +252,27 @@ function App() {
         } catch (error) {
             console.error(error);
         }
-    };
+    }, [favorites]);
 
-    const onChangeSearchInput = (event) => {
+    const onChangeSearchInput = React.useCallback((event) => {
         setSearchValue(event.target.value);
-    };
+    }, []);
 
-    const isItemAdded = (id) => {
+    const isItemAdded = React.useCallback((id) => {
         return cartItems.some(
             (obj) => Number(obj.parentId || obj.id) === Number(id)
         );
-    };
+    }, [cartItems]);
 
-    const getCartItemQuantity = (id) => {
+    const getCartItemQuantity = React.useCallback((id) => {
         const item = cartItems.find(
             (obj) => Number(obj.parentId || obj.id) === Number(id)
         );
         return item ? item.quantity || 1 : 0;
-    };
+    }, [cartItems]);
 
     // Toggle dark theme
-    const toggleTheme = () => {
+    const toggleTheme = React.useCallback(() => {
         const newTheme = !darkTheme;
         setDarkTheme(newTheme);
         localStorage.setItem('darkTheme', JSON.stringify(newTheme));
@@ -265,7 +283,7 @@ function App() {
         } else {
             document.body.classList.remove('dark-theme');
         }
-    };
+    }, [darkTheme]);
     
     // Load theme from localStorage on initial render
     React.useEffect(() => {
@@ -275,27 +293,40 @@ function App() {
             setDarkTheme(isDark);
             if (isDark) {
                 document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
             }
         }
     }, []);
 
+    const contextValue = React.useMemo(() => ({
+        items,
+        cartItems,
+        favorites,
+        isItemAdded,
+        getCartItemQuantity,
+        onAddToFavorite,
+        onAddToCart,
+        updateCartItemQuantity,
+        setCartOpened,
+        setCartItems,
+        darkTheme,
+        toggleTheme,
+    }), [
+        items,
+        cartItems,
+        favorites,
+        isItemAdded,
+        getCartItemQuantity,
+        onAddToFavorite,
+        onAddToCart,
+        updateCartItemQuantity,
+        darkTheme,
+        toggleTheme,
+    ]);
+
     return (
-        <AppContext.Provider
-            value={{
-                items,
-                cartItems,
-                favorites,
-                isItemAdded,
-                getCartItemQuantity,
-                onAddToFavorite,
-                onAddToCart,
-                updateCartItemQuantity,
-                setCartOpened,
-                setCartItems,
-                darkTheme,
-                toggleTheme,
-            }}
-        >
+        <AppContext.Provider value={contextValue}>
             <div className='wrapper clear'>
                 <Drawer
                     items={cartItems}
@@ -306,31 +337,33 @@ function App() {
 
                 <Header onClickCart={() => setCartOpened(true)} />
 
-                <Routes>
-                    <Route
-                        path='/'
-                        element={
-                            <Home
-                                items={items}
-                                cartItems={cartItems}
-                                searchValue={searchValue}
-                                setSearchValue={setSearchValue}
-                                onChangeSearchInput={onChangeSearchInput}
-                                onAddToFavorite={onAddToFavorite}
-                                onAddToCart={onAddToCart}
-                                isLoading={isLoading}
-                            />
-                        }
-                    />
-                    <Route
-                        path='/favorites'
-                        element={<Favorites />}
-                    />
-                    <Route
-                        path='/orders'
-                        element={<Orders />}
-                    />
-                </Routes>
+                <React.Suspense fallback={<div className='content'><h1>Загрузка...</h1></div>}>
+                    <Routes>
+                        <Route
+                            path='/'
+                            element={
+                                <Home
+                                    items={items}
+                                    cartItems={cartItems}
+                                    searchValue={searchValue}
+                                    setSearchValue={setSearchValue}
+                                    onChangeSearchInput={onChangeSearchInput}
+                                    onAddToFavorite={onAddToFavorite}
+                                    onAddToCart={onAddToCart}
+                                    isLoading={isLoading}
+                                />
+                            }
+                        />
+                        <Route
+                            path='/favorites'
+                            element={<Favorites />}
+                        />
+                        <Route
+                            path='/orders'
+                            element={<Orders />}
+                        />
+                    </Routes>
+                </React.Suspense>
             </div>
         </AppContext.Provider>
     );

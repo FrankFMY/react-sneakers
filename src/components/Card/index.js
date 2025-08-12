@@ -5,6 +5,8 @@ import AppContext from '../../context';
 
 import styles from './Card.module.scss';
 
+import { formatCurrency } from '../../utils/formatCurrency';
+
 function Card({
     id,
     title,
@@ -157,7 +159,7 @@ function Card({
                     <div className='d-flex justify-between align-center'>
                         <div className='d-flex flex-column'>
                             <span>Цена:</span>
-                            <b>{price} руб.</b>
+                            <b>{formatCurrency(price)}</b>
                         </div>
                         {onPlus && (
                             <div className='d-flex flex-column align-end'>
